@@ -19,6 +19,9 @@ a2test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o Heap
 a4-1.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o HeapFile.o SortedDBFile.o DBFile.o Statistics.o Pipe.o y.tab.o lex.yy.o test.o
 	$(CC) -o a4-1.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o HeapFile.o SortedDBFile.o DBFile.o Statistics.o Pipe.o y.tab.o lex.yy.o test.o -lfl -lpthread
 	
+main:   Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o HeapFile.o SortedDBFile.o DBFile.o Statistics.o Pipe.o y.tab.o lex.yy.o main.o
+	$(CC) -o main Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o HeapFile.o SortedDBFile.o DBFile.o Statistics.o Pipe.o y.tab.o lex.yy.o main.o -lfl -lpthread
+
 test.o: test.cc
 	$(CC) -g -c test.cc
 	
@@ -69,6 +72,9 @@ Record.o: Record.cc
 
 Schema.o: Schema.cc
 	$(CC) -g -c Schema.cc
+
+main.o : main.cc
+	$(CC) -g -c main.cc
 	
 y.tab.o: Parser.y
 	yacc -d Parser.y
