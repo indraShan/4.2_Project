@@ -478,4 +478,16 @@ void Record :: Print (Schema *mySchema) {
 }
 
 
+int Record :: GetNumAtts ()
+{
+	int numAtts = 0;
+	if (bits != NULL){
+		char *firstValPtr = bits + sizeof(int);
+		int firstOffset = *((int *) firstValPtr);
+		numAtts = (firstOffset / sizeof(int)) - 1;
+	}
+
+	return numAtts;
+}
+
 
