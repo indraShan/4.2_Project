@@ -59,6 +59,9 @@ public:
 
 	~Schema ();
 
+	void setAlias(char *alias);
+	Schema (Schema *schema);
+	Schema (Schema *schema1, Schema *schema2);
 };
 
 #endif

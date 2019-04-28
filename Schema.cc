@@ -60,6 +60,34 @@ Schema :: Schema (char *fpath, int num_atts, Attribute *atts) {
 	}
 }
 
+void Schema::setAlias(char *alias) {
+	for (int index = 0; index < numAtts; index++) {
+		char *attributeName = new char[strlen(alias) + strlen(myAtts[index].name)+2];
+		sprintf(attributeName, "%s.%s", alias, myAtts[index].name);
+		myAtts[index].name = attributeName;
+	}
+}
+
+Schema :: Schema (Schema *schema1, Schema *schema2) {
+	numAtts = schema1->numAtts + schema2->numAtts;
+	myAtts = new Attribute[numAtts];
+	for (int index = 0; index < schema1->numAtts; index++) {
+		myAtts[index] = schema1->myAtts[index];
+	}
+	for (int index = 0; index < schema2->numAtts; index++) {
+		myAtts[index + schema1->numAtts] = schema2->myAtts[index];
+	}
+}
+
+Schema :: Schema (Schema *schema) {
+	numAtts = schema->numAtts;
+	myAtts = new Attribute[numAtts];
+	fileName = (schema->fileName);
+	for (int index = 0; index < schema->numAtts; index++) {
+		myAtts[index] = schema->myAtts[index];
+	}
+}
+
 Schema :: Schema (char *fName, char *relName) {
 
 	FILE *foo = fopen (fName, "r");
