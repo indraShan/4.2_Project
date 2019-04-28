@@ -115,13 +115,8 @@ void QueryMaker::make() {
         if (distinctFunc) {
             root = new DuplicateRemovalNode(root);
         }
-    root = new GroupByNode(groupingAtts, finalFunction, root);
-  }
- else if (finalFunction) {
-//     root = new SumNode(finalFunction, root);
-//   }
-
-    // 
+    // root = new GroupByNode(groupingAtts, finalFunction, root);
+    }
 }
 
 DuplicateRemovalNode::DuplicateRemovalNode(TreeNode *root) : TreeNode(NULL, NULL) {
