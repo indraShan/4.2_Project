@@ -195,6 +195,9 @@ ProjectNode::ProjectNode(TreeNode *root, NameList *attsToSelect) : TreeNode("Pro
         printf("3.1 \n");
         attributes[index].name = attributes->name;
         printf("3.2 \n");
+        if (rootSchema == NULL) {
+            printf("Its null! \n");
+        }
         attributes[index].myType = rootSchema->FindType(attributes->name);
         printf("3.3 \n");
     }
