@@ -24,35 +24,25 @@ extern int distinctFunc;  // 1 if there is a DISTINCT in an aggregate query
 int main () {
 
 	Statistics *s = new Statistics();
-    char *relName[] = {"orders", "customer"};
-
-	
-	// s.AddRel(relName[0], 10000);
-	// s.AddAtt(relName[0], "o_orderkey", 10000);
-	// s.AddAtt(relName[0], "o_totalprice", 10000);
-	// s.AddAtt(relName[0], "o_custkey", 10000);
-
-	// s.AddRel(relName[1],800000);
-	// s.AddAtt(relName[1], "c_custkey", 10000);	
-
+	char *relName[] = {"supplier","customer","nation"};
 	char *catalog_path = "catalog"; 
-	// Statistics *statistics = new Statistics();
-	// statistics->Read("Statistics.txt");
-	// statistics->printStore();
+
 	
-	s->AddRel(relName[0],200000);
-	s->AddAtt(relName[0], "p_partkey",200000);
-	s->AddAtt(relName[0], "p_container",40);
+	s->AddRel(relName[0],10000);
+	s->AddAtt(relName[0], "s_nationkey",25);
 
-	s->AddRel(relName[1],6001215);
-	s->AddAtt(relName[1], "l_partkey",200000);
-	s->AddAtt(relName[1], "l_shipinstruct",4);
-	s->AddAtt(relName[1], "l_shipmode",7);
+	s->AddRel(relName[1],150000);
+	s->AddAtt(relName[1], "c_custkey",150000);
+	s->AddAtt(relName[1], "c_nationkey",25);
+	
+	s->AddRel(relName[2],25);
+	s->AddAtt(relName[2], "n_nationkey",25);
 
-	char *cnf = "SELECT p.part_key, p.p_container FROM part AS p WHERE (p.part_key < 1000)";
 
+	// s.printStore();
+	char *cnf = "SELECT DISTINCT s_nationkey FROM supplier AS s, nation AS n WHERE (s.s_nationkey = n.n_nationkey)";
 	yy_scan_string(cnf);
-	yyparse();
+	yyparse();	
 
 	QueryMaker *maker = new QueryMaker(
 		finalFunction,
@@ -66,6 +56,19 @@ int main () {
 		catalog_path);
 	maker->make();
 	maker->printQuery();
+
+	
+	// s.AddRel(relName[0], 10000);
+	// s.AddAtt(relName[0], "o_orderkey", 10000);
+	// s.AddAtt(relName[0], "o_totalprice", 10000);
+	// s.AddAtt(relName[0], "o_custkey", 10000);
+
+	// s.AddRel(relName[1],800000);
+	// s.AddAtt(relName[1], "c_custkey", 10000);	
+
+	// Statistics *statistics = new Statistics();
+	// statistics->Read("Statistics.txt");
+	// statistics->printStore();
 
 	// delete statistics;
 	// statistics = NULL;
