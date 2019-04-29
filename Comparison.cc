@@ -287,9 +287,7 @@ void CNF :: Print () {
 		}
 		cout << ") ";
 		if (i < numAnds - 1)
-			cout << " AND\n";
-		else
-			cout << "\n";
+			cout << " AND";
 	}
 }
 

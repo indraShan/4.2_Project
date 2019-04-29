@@ -5,7 +5,6 @@
 #include <climits>
 #include <stdlib.h>
 #include <string.h>
-#include "Function.h"
 
 static int PipeId = 0;
 
@@ -38,9 +37,9 @@ string TreeNode::makeIndentation(int depth) {
 void TreeNode::print(int depth) {
         // Print this node's data here.
     string indetation = makeIndentation(depth);
-    printf("%s %s", indetation.c_str(), this->displayString);
-    printf(" Operation. PipeId = %d \n", pipeId);
-    // printSelf();
+    printf("%s %s Operation", indetation.c_str(), this->displayString);
+    printSelf();
+    printf(". PipeId = %d \n", pipeId);
     if (this->left != NULL) {
         // printf("%s left of %s \n", indetation.c_str(), this->displayString);
         this->left->print(depth + 1);
@@ -101,7 +100,15 @@ FileNode::FileNode(TableList *table, char *alias, Schema *schema, char *relName)
 }
 
 void FileNode::printSelf() {
-    // printf("Table name =%s, aliasAs = %s \n", table->tableName, table->aliasAs);
+    this->cnf.Print();
+}
+
+void JoinNode::printSelf() {
+    this->cnf.Print();
+}
+
+void SumNode::printSelf() {
+    this->fnc.Print();
 }
 
 void QueryMaker::make() {
@@ -109,7 +116,9 @@ void QueryMaker::make() {
     AndList *leastCostTree = NULL;
     for (TableList* table = tables; table; table = table->next) {
         this->statistics->CopyRel(table->tableName, table->aliasAs);
-        FileNode *node = new FileNode(table, table->aliasAs, new Schema(this->catolog_path, table->tableName), table->tableName);
+        Schema *sch = new Schema(this->catolog_path, table->tableName);
+        FileNode *node = new FileNode(table, table->aliasAs, sch, table->tableName);
+        node->cnf.GrowFromParseTree(buildParseTreeAfterApplyingSelect(boolean, sch), sch, node->rec);
         this->nodes->push_back(node);
     }
     // // If there are multiple tables, find the most efficient join order.
@@ -189,8 +198,9 @@ Schema* SumNode::constructSchemaFrom(TreeNode *root, FuncOperator *finalFunction
   Schema *rootSchema = root->schema;
   Function function;
   function.GrowFromParseTree (finalFunction, *rootSchema);
+  fnc = function;
   Attribute atts[2][1] = {{{"sum", Int}}, {{"sum", Double}}};
-  return new Schema ("", 1, atts[function.returnsInt ? Int : Double]);
+  return new Schema ("", 1, atts[fnc.returnsInt ? Int : Double]);
 }
 
 GroupByNode::GroupByNode(TreeNode *root, NameList *groupingAtts, FuncOperator *finalFunction) : TreeNode("GroupBy", constructSchemaFrom(root, groupingAtts, finalFunction)) {
@@ -310,6 +320,7 @@ pair<int, AndList *> QueryMaker::evaluateJoinedParseTreeForOrder(vector<TreeNode
         // printf("Size after adding join = %d \n", order.size());
 
         AndList *currentTree = buildParseTreeAfterApplyingSelect(boolean, joined->schema);
+        joined->cnf.GrowFromParseTree(currentTree, joined->schema, joined->rec);
         append(builtTree, currentTree);
         
         int currentCost = this->statistics->Estimate(currentTree, joined->relNames, joined->numberOfRelations);

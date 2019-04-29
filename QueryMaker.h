@@ -4,6 +4,7 @@
 #include <vector>
 #include "ParseTree.h"
 #include "Schema.h"
+#include "Function.h"
 
 class TreeNode {
 private:
@@ -33,6 +34,8 @@ class FileNode: public TreeNode {
 private:
     TableList *table;
 public:
+    CNF cnf;
+    Record rec;
     FileNode(TableList *table, char *alias, Schema *schema, char *relName);
     void printSelf();
 };
@@ -46,6 +49,9 @@ class JoinNode: public TreeNode {
 private:
 
 public:
+    CNF cnf;
+    Record rec;
+    void printSelf();
     JoinNode(TreeNode *node1, TreeNode* node2);
 };
 
@@ -57,7 +63,9 @@ public:
 
 class SumNode: public TreeNode {
 public:
+    Function fnc;
     Schema* constructSchemaFrom(TreeNode *root, FuncOperator *finalFunction);
+    void printSelf();
     SumNode(TreeNode *root, FuncOperator *finalFunction);
 };
 
