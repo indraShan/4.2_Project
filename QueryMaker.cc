@@ -9,20 +9,32 @@
 
 static int PipeId = 0;
 
-TreeNode::TreeNode() {
-    
-}
-
-TreeNode::TreeNode(char* displayString, Schema *schema) {
+// int pipeId;
+//     char* displayString;
+//     Schema *schema;
+//     int estimatedCost;
+//     char *relNames[20];
+//     size_t numberOfRelations;
+//     TreeNode(char* displayString, Schema *schema);
+//     string makeIndentation(int depth);
+//     TreeNode(char* displayString, Schema *schema, char *relName);
+//     ~TreeNode();
+//     void print(int depth);
+//     TreeNode *left;
+//     TreeNode *right;
+//     virtual void printSelf();
+TreeNode::TreeNode(char* displayString, Schema *schema)
+: pipeId(PipeId++), estimatedCost(0), numberOfRelations(0), left(NULL), right(NULL) {
     this->schema = schema;
     this->displayString = displayString;
-    this->pipeId = PipeId++;
 }
 
-TreeNode::TreeNode(char* displayString, Schema *schema, char *relName) : displayString(displayString),  schema(schema), pipeId(PipeId++) {
-    this->estimatedCost = 0;
+TreeNode::TreeNode(char* displayString, Schema *schema, char *relName)
+ : pipeId(PipeId++), schema(schema), displayString(displayString), estimatedCost(0), left(NULL), right(NULL) {
+     printf("Default constrcutor \n");
     this->numberOfRelations = 1;
     this->relNames[0] = relName;
+     printf("after setting \n");
 }
 
 TreeNode::~TreeNode() {
@@ -101,7 +113,9 @@ void QueryMaker::printQuery() {
 FileNode::FileNode(TableList *table, char *alias, Schema *schema, char *relName) : TreeNode("File", schema, relName) {
     printf("FileNode called \n");
     this->table = table;
+    printf("setting table called \n");
     this->schema->setAlias(alias);
+    printf("setting schema called \n");
 }
 
 void FileNode::printSelf() {
