@@ -17,6 +17,7 @@ public:
     char *relNames[20];
     size_t numberOfRelations;
     TreeNode(char* displayString, Schema *schema);
+    TreeNode();
     string makeIndentation(int depth);
     TreeNode(char* displayString, Schema *schema, char *relName);
     ~TreeNode();
