@@ -182,18 +182,22 @@ WriteOutNode::WriteOutNode(TreeNode *root) : TreeNode("Write", new Schema(root->
 ProjectNode::ProjectNode(TreeNode *root, NameList *attsToSelect) : TreeNode("Project", NULL)  {
     printf("ProjectNode called \n");
     this->left = root;
+    printf("1 \n");
     for (size_t index = 0; index < root->numberOfRelations; index++) {
         this->relNames[this->numberOfRelations++] = strdup(root->relNames[index]);
     }
-
+    printf("2 \n");
     Schema *rootSchema = root->schema;
     Attribute attributes[20];
+    printf("3 \n");
     int index = 0;
     for (; attsToSelect; attsToSelect = attsToSelect->next, index++) {
         attributes[index].name = attributes->name;
         attributes[index].myType = rootSchema->FindType(attributes->name);
     }
+    printf("4 \n");
     schema = new Schema("", index, attributes);
+    printf("5 \n");
 }
 
 SumNode::SumNode(TreeNode *root, FuncOperator *finalFunction) : TreeNode("SumNode", constructSchemaFrom(root, finalFunction)) {
