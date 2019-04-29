@@ -10,11 +10,13 @@ private:
     
 
 public:
+    char* displayString;
     Schema *schema;
     int estimatedCost;
     char *relNames[20];
     size_t numberOfRelations;
-    TreeNode(char *fpath, char *relName);
+    TreeNode(char* displayString, Schema *schema);
+    TreeNode(char* displayString, Schema *schema, char *relName);
     ~TreeNode();
     void print();
     TreeNode *left;
@@ -29,12 +31,13 @@ class FileNode: public TreeNode {
 private:
     TableList *table;
 public:
-    FileNode(TableList *table, char *fpath, char *relName, char* alias);
+    FileNode(TableList *table, char *alias, Schema *schema, char *relName);
     void printSelf();
 };
 
 class ProjectNode: public TreeNode {
-
+public:
+ProjectNode(TreeNode *root, NameList *attsToSelect);
 };
 
 class JoinNode: public TreeNode {
@@ -51,12 +54,20 @@ public:
 };
 
 class SumNode: public TreeNode {
+public:
+    Schema* constructSchemaFrom(TreeNode *root, FuncOperator *finalFunction);
+    SumNode(TreeNode *root, FuncOperator *finalFunction);
 };
 
 class GroupByNode: public TreeNode {
+public:
+GroupByNode(TreeNode *root, NameList *groupingAtts, FuncOperator *finalFunction);
+Schema* constructSchemaFrom(TreeNode *root, NameList *groupingAtts, FuncOperator *finalFunction);
 };
 
 class WriteOutNode: public TreeNode {
+public:
+    WriteOutNode(TreeNode *root);
 };
 
 class QueryMaker {

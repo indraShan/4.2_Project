@@ -5,17 +5,17 @@
 #include <climits>
 #include <stdlib.h>
 #include <string.h>
+#include "Function.h"
 
+TreeNode::TreeNode(char* displayString, Schema *schema) {
+    this->schema = schema;
+    this->displayString = displayString;
+}
 
-TreeNode::TreeNode(char *fpath, char *relName) {
-    if (fpath != NULL) {
-        this->schema = new Schema(fpath, relName);
-    }
+TreeNode::TreeNode(char* displayString, Schema *schema, char *relName) : displayString(displayString),  schema(schema) {
     this->estimatedCost = 0;
-    if (relName != NULL) {
-        this->relNames[this->numberOfRelations] = relName;
-        this->numberOfRelations = 1;
-    }
+    this->numberOfRelations = 1;
+    this->relNames[0] = relName;
 }
 
 TreeNode::~TreeNode() {
@@ -27,6 +27,8 @@ void TreeNode::print() {
         this->left->print();
     }
     // Print this node's data here.
+    printf(this->displayString);
+    printf(" Operation \n");
     printSelf();
 
     if (this->right != NULL) {
@@ -35,7 +37,9 @@ void TreeNode::print() {
 }
 
 void TreeNode::printSelf() {
-    printf("Called in base class \n");
+//   printAnnot(os, level);
+//   printSchema(os, level);
+//   printPipe(os, level);
 }
 
 
@@ -73,13 +77,14 @@ void QueryMaker::printQuery() {
     this->root->print();
 }
 
-FileNode::FileNode(TableList *table, char *fpath, char *relName, char *alias) : TreeNode(fpath, relName) {
+FileNode::FileNode(TableList *table, char *alias, Schema *schema, char *relName) : TreeNode("File", schema, relName) {
+    printf("FileNode called \n");
     this->table = table;
     this->schema->setAlias(alias);
 }
 
 void FileNode::printSelf() {
-    printf("Table name =%s, aliasAs = %s \n", table->tableName, table->aliasAs);
+    // printf("Table name =%s, aliasAs = %s \n", table->tableName, table->aliasAs);
 }
 
 void QueryMaker::make() {
@@ -87,14 +92,14 @@ void QueryMaker::make() {
     AndList *leastCostTree = NULL;
     for (TableList* table = tables; table; table = table->next) {
         this->statistics->CopyRel(table->tableName, table->aliasAs);
-        FileNode *node = new FileNode(table, this->catolog_path, table->tableName, table->aliasAs);
+        FileNode *node = new FileNode(table, table->aliasAs, new Schema(this->catolog_path, table->tableName), table->tableName);
         this->nodes->push_back(node);
     }
     // // If there are multiple tables, find the most efficient join order.
     int minJoinCost = INT_MAX;
-    
+    printf("Nodes size = %d \n", nodes->size());
     vector<TreeNode *> intermediate(*nodes);
-    
+    printf("intermediate size = %d \n", intermediate.size());
     // sort to make next_permutation happy
     sort(intermediate.begin(), intermediate.end());
     do
@@ -107,28 +112,107 @@ void QueryMaker::make() {
         } 
     } while (next_permutation(intermediate.begin(), intermediate.end()));
 
-    // Get the root.
     this->root = nodes->front();
-    printf("Final cost = %d \n", minJoinCost);
+
+    printf("After creating joins. root = ");
+    this->root->print();
 
     if (groupingAtts) {
         if (distinctFunc) {
             root = new DuplicateRemovalNode(root);
         }
-    // root = new GroupByNode(groupingAtts, finalFunction, root);
+        root = new GroupByNode(root, groupingAtts, finalFunction);
     }
+    else if (finalFunction) {
+        root = new SumNode(root, finalFunction);
+    }
+
+    if (attsToSelect && !finalFunction && !groupingAtts) {
+        root = new ProjectNode(root, attsToSelect);
+    }
+
+    if (distinctAtts) {
+        root = new DuplicateRemovalNode(root);
+    }
+
+    root = new WriteOutNode(root);
 }
 
-DuplicateRemovalNode::DuplicateRemovalNode(TreeNode *root) : TreeNode(NULL, NULL) {
-    this->schema = new Schema(root->schema);
+WriteOutNode::WriteOutNode(TreeNode *root) : TreeNode("Write", new Schema(root->schema)) {
+    printf("Write node called \n");
     this->left = root;
     for (size_t index = 0; index < root->numberOfRelations; index++) {
         this->relNames[this->numberOfRelations++] = strdup(root->relNames[index]);
     }
 }
 
-JoinNode::JoinNode(TreeNode *node1, TreeNode* node2) : TreeNode(NULL, NULL) {
-    this->schema = new Schema(node1->schema, node2->schema);
+ProjectNode::ProjectNode(TreeNode *root, NameList *attsToSelect) : TreeNode("Project", NULL)  {
+    printf("ProjectNode called \n");
+    this->left = root;
+    for (size_t index = 0; index < root->numberOfRelations; index++) {
+        this->relNames[this->numberOfRelations++] = strdup(root->relNames[index]);
+    }
+
+    Schema *rootSchema = root->schema;
+    Attribute attributes[20];
+    int index = 0;
+    for (; attsToSelect; attsToSelect = attsToSelect->next, index++) {
+        attributes[index].name = attributes->name;
+        attributes[index].myType = rootSchema->FindType(attributes->name);
+    }
+    schema = new Schema("", index, attributes);
+}
+
+SumNode::SumNode(TreeNode *root, FuncOperator *finalFunction) : TreeNode("SumNode", constructSchemaFrom(root, finalFunction)) {
+    printf("SumNode called \n");
+    this->left = root;
+    for (size_t index = 0; index < root->numberOfRelations; index++) {
+        this->relNames[this->numberOfRelations++] = strdup(root->relNames[index]);
+    }
+}
+
+Schema* SumNode::constructSchemaFrom(TreeNode *root, FuncOperator *finalFunction) {
+  Schema *rootSchema = root->schema;
+  Function function;
+  function.GrowFromParseTree (finalFunction, *rootSchema);
+  Attribute atts[2][1] = {{{"sum", Int}}, {{"sum", Double}}};
+  return new Schema ("", 1, atts[function.returnsInt ? Int : Double]);
+}
+
+GroupByNode::GroupByNode(TreeNode *root, NameList *groupingAtts, FuncOperator *finalFunction) : TreeNode("GroupBy", constructSchemaFrom(root, groupingAtts, finalFunction)) {
+    printf("GroupByNode called \n");
+    this->left = root;
+    for (size_t index = 0; index < root->numberOfRelations; index++) {
+        this->relNames[this->numberOfRelations++] = strdup(root->relNames[index]);
+    }
+}
+
+Schema* GroupByNode::constructSchemaFrom(TreeNode *root, NameList *groupingAtts, FuncOperator *finalFunction) {
+    Function function;
+    Schema *rootSchema = root->schema;
+    function.GrowFromParseTree(finalFunction, *rootSchema);
+    Attribute attributes[20];
+    attributes[0].name = "sum"; 
+    attributes[0].myType = function.returnsInt ? Int : Double;
+    int numberOfAttributes = 1;
+    for (; groupingAtts; groupingAtts = groupingAtts->next, numberOfAttributes++)
+    {
+        attributes[numberOfAttributes].name = groupingAtts->name; 
+        attributes[numberOfAttributes].myType = rootSchema->FindType(groupingAtts->name);
+    }
+    return new Schema("", numberOfAttributes, attributes);
+}
+
+DuplicateRemovalNode::DuplicateRemovalNode(TreeNode *root) : TreeNode("DuplicateRemoval", new Schema(root->schema)) {
+    printf("DuplicateRemovalNode called \n");
+    this->left = root;
+    for (size_t index = 0; index < root->numberOfRelations; index++) {
+        this->relNames[this->numberOfRelations++] = strdup(root->relNames[index]);
+    }
+}
+
+JoinNode::JoinNode(TreeNode *node1, TreeNode* node2) : TreeNode("Join", new Schema(node1->schema, node2->schema)) {
+    printf("JoinNode called \n");
     this->left = node1;
     this->right = node2;
     for (size_t index = 0; index < node1->numberOfRelations; index++) {
@@ -192,6 +276,13 @@ pair<int, AndList *> QueryMaker::evaluateJoinedParseTreeForOrder(vector<TreeNode
      AndList *builtTree = NULL;
      int cost = 0;
 
+printf("Eval called with size = %d \n", order.size());
+ for (std::vector<TreeNode*>::iterator runsIterator = order.begin(); runsIterator != order.end(); ++runsIterator)
+	{
+		TreeNode *node = *runsIterator;
+		node->print();
+	}
+
      while (order.size() > 1) {
          // Join the last two nodes
          TreeNode *node1 = order.back();
@@ -218,7 +309,7 @@ pair<int, AndList *> QueryMaker::evaluateJoinedParseTreeForOrder(vector<TreeNode
             break;
         }
      }
-     printf("cost = %d \n", cost);
+    //  printf("cost = %d \n", cost);
      if (failure) {
          return std::make_pair(INT_MAX, builtTree);
      }
