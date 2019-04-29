@@ -80,7 +80,6 @@ NameList *attsToSelect;
 int distinctAtts;
 int distinctFunc;
 Statistics *statistics;
-TreeNode *root;
 vector<TreeNode*> *nodes;
 char *catolog_path;
 
@@ -91,6 +90,7 @@ bool attributesPresentInSchema(OrList *orList, Schema *schema);
 void append(AndList*& source, AndList*& addition);
 
 public:
+    TreeNode *root;
     QueryMaker (
         FuncOperator *finalFunction, 
         TableList *tables,
