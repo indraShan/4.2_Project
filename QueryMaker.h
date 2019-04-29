@@ -10,15 +10,17 @@ private:
     
 
 public:
+    int pipeId;
     char* displayString;
     Schema *schema;
     int estimatedCost;
     char *relNames[20];
     size_t numberOfRelations;
     TreeNode(char* displayString, Schema *schema);
+    string makeIndentation(int depth);
     TreeNode(char* displayString, Schema *schema, char *relName);
     ~TreeNode();
-    void print();
+    void print(int depth);
     TreeNode *left;
     TreeNode *right;
     virtual void printSelf();

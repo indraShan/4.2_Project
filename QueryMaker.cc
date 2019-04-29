@@ -7,12 +7,15 @@
 #include <string.h>
 #include "Function.h"
 
+static int PipeId = 0;
+
 TreeNode::TreeNode(char* displayString, Schema *schema) {
     this->schema = schema;
     this->displayString = displayString;
+    this->pipeId = PipeId++;
 }
 
-TreeNode::TreeNode(char* displayString, Schema *schema, char *relName) : displayString(displayString),  schema(schema) {
+TreeNode::TreeNode(char* displayString, Schema *schema, char *relName) : displayString(displayString),  schema(schema), pipeId(PipeId++) {
     this->estimatedCost = 0;
     this->numberOfRelations = 1;
     this->relNames[0] = relName;
@@ -22,17 +25,30 @@ TreeNode::~TreeNode() {
 
 }
 
-void TreeNode::print() {
-    if (this->left != NULL) {
-        this->left->print();
+string TreeNode::makeIndentation(int depth) {
+    string indent = "";
+    for (int index = 0; index < depth; index++) {
+        indent += "\t";
     }
-    // Print this node's data here.
-    printf(this->displayString);
-    printf(" Operation \n");
-    printSelf();
+    indent += "->";
+    return indent;
+}
+
+// Inorder?
+void TreeNode::print(int depth) {
+        // Print this node's data here.
+    string indetation = makeIndentation(depth);
+    printf("%s %s", indetation.c_str(), this->displayString);
+    printf(" Operation. PipeId = %d \n", pipeId);
+    // printSelf();
+    if (this->left != NULL) {
+        // printf("%s left of %s \n", indetation.c_str(), this->displayString);
+        this->left->print(depth + 1);
+    }
 
     if (this->right != NULL) {
-        this->right->print();
+        // printf("%s right of %s\n", indetation.c_str(), this->displayString);
+        this->right->print(depth + 1);
     }
 }
 
@@ -71,14 +87,15 @@ QueryMaker::~QueryMaker () {
 }
 
 void QueryMaker::printQuery() {
+    // printf("Print called \n");
     if (this->root == NULL) {
         return;
     }
-    this->root->print();
+    this->root->print(0);
 }
 
 FileNode::FileNode(TableList *table, char *alias, Schema *schema, char *relName) : TreeNode("File", schema, relName) {
-    printf("FileNode called \n");
+    // printf("FileNode called \n");
     this->table = table;
     this->schema->setAlias(alias);
 }
@@ -97,9 +114,9 @@ void QueryMaker::make() {
     }
     // // If there are multiple tables, find the most efficient join order.
     int minJoinCost = INT_MAX;
-    printf("Nodes size = %d \n", nodes->size());
+    // printf("Nodes size = %d \n", nodes->size());
     vector<TreeNode *> intermediate(*nodes);
-    printf("intermediate size = %d \n", intermediate.size());
+    // printf("intermediate size = %d \n", intermediate.size());
     // sort to make next_permutation happy
     sort(intermediate.begin(), intermediate.end());
     do
@@ -107,15 +124,13 @@ void QueryMaker::make() {
         std::pair<int, AndList *> pair = evaluateJoinedParseTreeForOrder(intermediate, minJoinCost);
         if (pair.first < minJoinCost) {
             minJoinCost = pair.first;
-            nodes = new vector<TreeNode*>(intermediate);
             leastCostTree = pair.second;
         } 
     } while (next_permutation(intermediate.begin(), intermediate.end()));
 
     this->root = nodes->front();
 
-    printf("After creating joins. root = ");
-    this->root->print();
+    // printf("After creating joins. size = %d \n", nodes->size());
 
     if (groupingAtts) {
         if (distinctFunc) {
@@ -139,7 +154,7 @@ void QueryMaker::make() {
 }
 
 WriteOutNode::WriteOutNode(TreeNode *root) : TreeNode("Write", new Schema(root->schema)) {
-    printf("Write node called \n");
+    // printf("Write node called \n");
     this->left = root;
     for (size_t index = 0; index < root->numberOfRelations; index++) {
         this->relNames[this->numberOfRelations++] = strdup(root->relNames[index]);
@@ -147,7 +162,7 @@ WriteOutNode::WriteOutNode(TreeNode *root) : TreeNode("Write", new Schema(root->
 }
 
 ProjectNode::ProjectNode(TreeNode *root, NameList *attsToSelect) : TreeNode("Project", NULL)  {
-    printf("ProjectNode called \n");
+    // printf("ProjectNode called \n");
     this->left = root;
     for (size_t index = 0; index < root->numberOfRelations; index++) {
         this->relNames[this->numberOfRelations++] = strdup(root->relNames[index]);
@@ -164,7 +179,7 @@ ProjectNode::ProjectNode(TreeNode *root, NameList *attsToSelect) : TreeNode("Pro
 }
 
 SumNode::SumNode(TreeNode *root, FuncOperator *finalFunction) : TreeNode("SumNode", constructSchemaFrom(root, finalFunction)) {
-    printf("SumNode called \n");
+    // printf("SumNode called \n");
     this->left = root;
     for (size_t index = 0; index < root->numberOfRelations; index++) {
         this->relNames[this->numberOfRelations++] = strdup(root->relNames[index]);
@@ -180,7 +195,7 @@ Schema* SumNode::constructSchemaFrom(TreeNode *root, FuncOperator *finalFunction
 }
 
 GroupByNode::GroupByNode(TreeNode *root, NameList *groupingAtts, FuncOperator *finalFunction) : TreeNode("GroupBy", constructSchemaFrom(root, groupingAtts, finalFunction)) {
-    printf("GroupByNode called \n");
+    // printf("GroupByNode called \n");
     this->left = root;
     for (size_t index = 0; index < root->numberOfRelations; index++) {
         this->relNames[this->numberOfRelations++] = strdup(root->relNames[index]);
@@ -204,7 +219,7 @@ Schema* GroupByNode::constructSchemaFrom(TreeNode *root, NameList *groupingAtts,
 }
 
 DuplicateRemovalNode::DuplicateRemovalNode(TreeNode *root) : TreeNode("DuplicateRemoval", new Schema(root->schema)) {
-    printf("DuplicateRemovalNode called \n");
+    // printf("DuplicateRemovalNode called \n");
     this->left = root;
     for (size_t index = 0; index < root->numberOfRelations; index++) {
         this->relNames[this->numberOfRelations++] = strdup(root->relNames[index]);
@@ -212,7 +227,7 @@ DuplicateRemovalNode::DuplicateRemovalNode(TreeNode *root) : TreeNode("Duplicate
 }
 
 JoinNode::JoinNode(TreeNode *node1, TreeNode* node2) : TreeNode("Join", new Schema(node1->schema, node2->schema)) {
-    printf("JoinNode called \n");
+    // printf("JoinNode called \n");
     this->left = node1;
     this->right = node2;
     for (size_t index = 0; index < node1->numberOfRelations; index++) {
@@ -276,12 +291,12 @@ pair<int, AndList *> QueryMaker::evaluateJoinedParseTreeForOrder(vector<TreeNode
      AndList *builtTree = NULL;
      int cost = 0;
 
-printf("Eval called with size = %d \n", order.size());
- for (std::vector<TreeNode*>::iterator runsIterator = order.begin(); runsIterator != order.end(); ++runsIterator)
-	{
-		TreeNode *node = *runsIterator;
-		node->print();
-	}
+// printf("Eval called with size = %d \n", order.size());
+//  for (std::vector<TreeNode*>::iterator runsIterator = order.begin(); runsIterator != order.end(); ++runsIterator)
+// 	{
+// 		TreeNode *node = *runsIterator;
+// 		node->print();
+// 	}
 
      while (order.size() > 1) {
          // Join the last two nodes
@@ -290,8 +305,10 @@ printf("Eval called with size = %d \n", order.size());
          TreeNode *node2 = order.back(); 
          order.pop_back();
 
+        // printf("Size after removal = %d \n", order.size());
         JoinNode *joined = new JoinNode(node1, node2);
         order.push_back(joined);
+        // printf("Size after adding join = %d \n", order.size());
 
         AndList *currentTree = buildParseTreeAfterApplyingSelect(boolean, joined->schema);
         append(builtTree, currentTree);
@@ -299,6 +316,7 @@ printf("Eval called with size = %d \n", order.size());
         int currentCost = this->statistics->Estimate(currentTree, joined->relNames, joined->numberOfRelations);
         // printf("currentCost = %d \n", currentCost);
         if (currentCost < 0) {
+            // printf("Breaking out \n");
             // TODO: handle failure
             failure = true;
             break;
@@ -306,8 +324,15 @@ printf("Eval called with size = %d \n", order.size());
         cost += currentCost;
         if (cost > cureentMin) {
             failure = true;
+            // printf("Breaking out 2 \n");
             break;
         }
+     }
+     if (failure == false && cost < cureentMin) {
+        //  printf("Prnting the only tree in order \n");
+        //  order.front()->print();
+        //  printf("size of the array =%d \n", order.size());
+         nodes = new vector<TreeNode*>(order);
      }
     //  printf("cost = %d \n", cost);
      if (failure) {
