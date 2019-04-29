@@ -17,8 +17,9 @@ int Schema :: Find (char *attName) {
 }
 
 Type Schema :: FindType (char *attName) {
-
+	printf("Find called \n");
 	for (int i = 0; i < numAtts; i++) {
+		printf("about to compare \n");
 		if (!strcmp (attName, myAtts[i].name)) {
 			return myAtts[i].myType;
 		}
