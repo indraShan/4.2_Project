@@ -7,20 +7,20 @@ ifdef linux
 tag = -n
 endif
 
-test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o HeapFile.o SortedDBFile.o DBFile.o Statistics.o Pipe.o QueryMaker.o BigQ.o RelOp.o Function.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o test.o
+test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o HeapFile.o SortedDBFile.o DBFile.o Statistics.o Pipe.o QueryMaker.o BigQ.o RelOp.o Function.o yyfunc.tab.o lex.yy.o lex.yyfunc.o test.o
 	$(CC) -o test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o HeapFile.o SortedDBFile.o DBFile.o Statistics.o Pipe.o QueryMaker.o BigQ.o RelOp.o Function.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o test.o -lfl -lpthread
 	
-a2-2test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o HeapFile.o SortedDBFile.o DBFile.o QueryMaker.o Statistics.o Pipe.o y.tab.o lex.yy.o a2-2test.o
-	$(CC) -o a2-2test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o HeapFile.o SortedDBFile.o QueryMaker.o DBFile.o Statistics.o Pipe.o y.tab.o lex.yy.o a2-2test.o -lfl -lpthread
+a2-2test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o HeapFile.o SortedDBFile.o DBFile.o Statistics.o Pipe.o QueryMaker.o y.tab.o Function.o lex.yy.o a2-2test.o
+	$(CC) -o a2-2test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o HeapFile.o SortedDBFile.o DBFile.o Statistics.o Pipe.o QueryMaker.o Function.o y.tab.o lex.yy.o a2-2test.o -lfl -lpthread
 	
-a2test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o HeapFile.o SortedDBFile.o DBFile.o Statistics.o QueryMaker.o Pipe.o y.tab.o lex.yy.o a2-test.o
-	$(CC) -o a2test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o HeapFile.o SortedDBFile.o DBFile.o QueryMaker.o Statistics.o Pipe.o y.tab.o lex.yy.o a2-test.o -lfl -lpthread
+a2test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o HeapFile.o SortedDBFile.o DBFile.o Statistics.o Pipe.o QueryMaker.o y.tab.o Function.o lex.yy.o a2-test.o
+	$(CC) -o a2test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o HeapFile.o SortedDBFile.o DBFile.o Statistics.o Pipe.o QueryMaker.o Function.o y.tab.o lex.yy.o a2-test.o -lfl -lpthread
 	
-a4-1.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o HeapFile.o SortedDBFile.o DBFile.o Statistics.o QueryMaker.o Pipe.o y.tab.o lex.yy.o test.o
-	$(CC) -o a4-1.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o HeapFile.o SortedDBFile.o DBFile.o QueryMaker.o Statistics.o Pipe.o y.tab.o lex.yy.o test.o -lfl -lpthread
+a4-1.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o HeapFile.o SortedDBFile.o DBFile.o Statistics.o Pipe.o QueryMaker.o y.tab.o Function.o lex.yy.o test.o
+	$(CC) -o a4-1.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o HeapFile.o SortedDBFile.o DBFile.o Statistics.o QueryMaker.o Function.o Pipe.o y.tab.o lex.yy.o test.o -lfl -lpthread
 	
-main:   Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o HeapFile.o SortedDBFile.o DBFile.o Statistics.o QueryMaker.o Pipe.o y.tab.o lex.yy.o main.o
-	$(CC) -o main Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o HeapFile.o SortedDBFile.o DBFile.o QueryMaker.o Statistics.o Pipe.o y.tab.o lex.yy.o main.o -lfl -lpthread
+main:   Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o HeapFile.o SortedDBFile.o DBFile.o Statistics.o Pipe.o QueryMaker.o y.tab.o Function.o lex.yy.o main.o
+	$(CC) -o main Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o HeapFile.o SortedDBFile.o DBFile.o Statistics.o QueryMaker.o Function.o Pipe.o y.tab.o lex.yy.o main.o -lfl -lpthread
 
 test.o: test.cc
 	$(CC) -g -c test.cc
