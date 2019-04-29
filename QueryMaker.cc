@@ -192,8 +192,11 @@ ProjectNode::ProjectNode(TreeNode *root, NameList *attsToSelect) : TreeNode("Pro
     printf("3 \n");
     int index = 0;
     for (; attsToSelect; attsToSelect = attsToSelect->next, index++) {
+        printf("3.1 \n");
         attributes[index].name = attributes->name;
+        printf("3.2 \n");
         attributes[index].myType = rootSchema->FindType(attributes->name);
+        printf("3.3 \n");
     }
     printf("4 \n");
     schema = new Schema("", index, attributes);
