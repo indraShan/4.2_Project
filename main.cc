@@ -10,6 +10,9 @@ extern "C" {
 	int yyparse(void);   // defined in y.tab.c
 }
 
+extern "C" struct YY_BUFFER_STATE *yy_scan_string(const char*);
+
+
 extern struct FuncOperator *finalFunction; // the aggregate function (NULL if no agg)
 extern struct TableList *tables; // the list of tables and aliases in the query
 extern struct AndList *boolean; // the predicate in the WHERE clause
@@ -20,8 +23,8 @@ extern int distinctFunc;  // 1 if there is a DISTINCT in an aggregate query
 
 int main () {
 
-	// Statistics s;
-    // char *relName[] = {"orders", "customer"};
+	Statistics *s = new Statistics();
+    char *relName[] = {"orders", "customer"};
 
 	
 	// s.AddRel(relName[0], 10000);
@@ -31,14 +34,26 @@ int main () {
 
 	// s.AddRel(relName[1],800000);
 	// s.AddAtt(relName[1], "c_custkey", 10000);	
-	// s.Write("new_stats.txt");
-
 
 	char *catalog_path = "catalog"; 
-	Statistics *statistics = new Statistics();
-	statistics->Read("Statistics.txt");
-	statistics->printStore();
+	// Statistics *statistics = new Statistics();
+	// statistics->Read("Statistics.txt");
+	// statistics->printStore();
+	
+	s->AddRel(relName[0],200000);
+	s->AddAtt(relName[0], "p_partkey",200000);
+	s->AddAtt(relName[0], "p_container",40);
+
+	s->AddRel(relName[1],6001215);
+	s->AddAtt(relName[1], "l_partkey",200000);
+	s->AddAtt(relName[1], "l_shipinstruct",4);
+	s->AddAtt(relName[1], "l_shipmode",7);
+
+	char *cnf = "SELECT p.part_key, p.p_container FROM part AS p WHERE (p.part_key < 1000)";
+
+	yy_scan_string(cnf);
 	yyparse();
+
 	QueryMaker *maker = new QueryMaker(
 		finalFunction,
 		tables, 
@@ -47,13 +62,13 @@ int main () {
 		attsToSelect, 
 		distinctAtts, 
 		distinctFunc, 
-		statistics,
+		s,
 		catalog_path);
 	maker->make();
-	// maker->printQuery();
+	maker->printQuery();
 
-	delete statistics;
-	statistics = NULL;
+	// delete statistics;
+	// statistics = NULL;
 }
 
 
