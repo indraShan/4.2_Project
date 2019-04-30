@@ -28,6 +28,8 @@ public:
 
 	Function ();
 
+	Function (const Function& other);
+	Function& operator=( const Function& other );
 	// this grows the specified function from a parse tree and converts
 	// it into an accumulator-based computation over the attributes in
 	// a record with the given schema; the record "literal" is produced

@@ -62,11 +62,14 @@ public:
 
 	// print to the screen
 	void Print ();
+	void PrintInLine ();
 
 	std::string toString();
 
 	// Sole purpose of this method is to help in testing this class.
 	void testing_helper_setAttributes(int numberOfAttributes, int* attibutes, Type *types);
+
+	void constructOrderMaker(NameList* groupingAtts, Schema* mySchema);
 };
 
 class Record;

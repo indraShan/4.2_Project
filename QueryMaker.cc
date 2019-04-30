@@ -108,8 +108,31 @@ void JoinNode::printSelf() {
 }
 
 void SumNode::printSelf() {
-    this->fnc.Print();
+    this->fnc->Print();
 }
+
+void GroupByNode::printSelf() {
+    this->om.PrintInLine();
+    this->fnc->Print();
+}
+
+void ProjectNode::printSelf() {
+    printf(" Atts to keep : %d | ", attsToKeep);
+    for(int i = 0; i < attsToKeep; i++){
+        printf("%s - ",attributes[i].name);
+        if(attributes[i].myType == Int){
+            printf("Int");
+        }
+        else if(attributes[i].myType == Double){
+            printf("Double");
+        }
+        else printf("String");
+        if(i < attsToKeep - 1){
+            printf(", ");
+        }
+    }
+}
+
 
 void QueryMaker::make() {
     // Make tables.
@@ -177,11 +200,11 @@ ProjectNode::ProjectNode(TreeNode *root, NameList *attsToSelect) : TreeNode("Pro
         this->relNames[this->numberOfRelations++] = strdup(root->relNames[index]);
     }
     Schema *rootSchema = root->schema;
-    Attribute attributes[20];
     int index = 0;
     for (; attsToSelect; attsToSelect = attsToSelect->next, index++) {
         attributes[index].name = attsToSelect->name;
         attributes[index].myType = rootSchema->FindType(attsToSelect->name);
+        attsToKeep++;
     }
     schema = new Schema("", index, attributes);
 }
@@ -196,16 +219,16 @@ SumNode::SumNode(TreeNode *root, FuncOperator *finalFunction) : TreeNode("SumNod
 
 Schema* SumNode::constructSchemaFrom(TreeNode *root, FuncOperator *finalFunction) {
   Schema *rootSchema = root->schema;
-  Function function;
-  function.GrowFromParseTree (finalFunction, *rootSchema);
-  fnc = function;
+    fnc = new Function();
+  fnc->GrowFromParseTree (finalFunction, *rootSchema);
   Attribute atts[2][1] = {{{"sum", Int}}, {{"sum", Double}}};
-  return new Schema ("", 1, atts[fnc.returnsInt ? Int : Double]);
+  return new Schema ("", 1, atts[fnc->returnsInt ? Int : Double]);
 }
 
 GroupByNode::GroupByNode(TreeNode *root, NameList *groupingAtts, FuncOperator *finalFunction) : TreeNode("GroupBy", constructSchemaFrom(root, groupingAtts, finalFunction)) {
     // printf("GroupByNode called \n");
     this->left = root;
+    om.constructOrderMaker(groupingAtts, this->schema);
     for (size_t index = 0; index < root->numberOfRelations; index++) {
         this->relNames[this->numberOfRelations++] = strdup(root->relNames[index]);
     }
@@ -214,10 +237,11 @@ GroupByNode::GroupByNode(TreeNode *root, NameList *groupingAtts, FuncOperator *f
 Schema* GroupByNode::constructSchemaFrom(TreeNode *root, NameList *groupingAtts, FuncOperator *finalFunction) {
     Function function;
     Schema *rootSchema = root->schema;
-    function.GrowFromParseTree(finalFunction, *rootSchema);
+    fnc = new Function();
+    fnc->GrowFromParseTree(finalFunction, *rootSchema);
     Attribute attributes[20];
     attributes[0].name = "sum"; 
-    attributes[0].myType = function.returnsInt ? Int : Double;
+    attributes[0].myType = fnc->returnsInt ? Int : Double;
     int numberOfAttributes = 1;
     for (; groupingAtts; groupingAtts = groupingAtts->next, numberOfAttributes++)
     {

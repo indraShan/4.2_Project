@@ -6,6 +6,22 @@ Function :: Function () {
 
 	opList = new Arithmatic[MAX_DEPTH];
 }
+Function :: Function (const Function& other) {
+	this->numOps = other.numOps;
+	this->opList = new Arithmatic[MAX_DEPTH];
+	for (int i=0; i<numOps; ++i){
+		this->opList[i] = other.opList[i];
+	}	
+}
+
+Function& Function::operator=( const Function& other ) {
+	this->numOps = other.numOps;
+	this->opList = new Arithmatic[MAX_DEPTH];
+	for (int i=0; i<numOps; ++i){
+		this->opList[i] = other.opList[i];
+	}
+    return *this;
+}
 
 Type Function :: RecursivelyBuild (struct FuncOperator *parseTree, Schema &mySchema) {
 
@@ -201,7 +217,14 @@ void Function :: GrowFromParseTree (struct FuncOperator *parseTree, Schema &mySc
 }
 
 void Function :: Print () {
-
+	char* arithOpNames[14] = {
+		"PushInt", "PushDouble", "ToDouble", "ToDouble2Down", 
+		"IntUnaryMinus", "IntMinus", "IntPlus", "IntDivide", "IntMultiply",
+		"DblUnaryMinus", "DblMinus", "DblPlus", "DblDivide", "DblMultiply"
+	};
+	for (int i=0; i<numOps; ++i){
+    	printf(" %d %s | ", opList[i].recInput, arithOpNames[opList[i].myOp]);
+	}
 }
 
 Type Function :: Apply (Record &toMe, int &intResult, double &doubleResult) {

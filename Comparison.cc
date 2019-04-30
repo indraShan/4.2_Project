@@ -149,6 +149,27 @@ void OrderMaker :: Print () {
 	}
 }
 
+void OrderMaker :: PrintInLine () {
+	printf(" | NumAtts = %1d | ", numAtts);
+	for (int i = 0; i < numAtts; i++)
+	{
+		printf("%1d: %2d ", i, whichAtts[i]);
+		if (whichTypes[i] == Int)
+			printf("Int | ");
+		else if (whichTypes[i] == Double)
+			printf("Double | ");
+		else
+			printf("String | ");
+	}
+}
+
+void OrderMaker::constructOrderMaker(NameList* groupingAtts, Schema* mySchema) {
+  for(; groupingAtts; groupingAtts = groupingAtts->next, numAtts++) {
+    whichAtts[numAtts] = mySchema->Find(groupingAtts->name);
+    whichTypes[numAtts] = mySchema->FindType(groupingAtts->name);
+  }
+}
+
 // If this attribute is in the CNF instance, and it is the only
 // attribute present in its subexpression, an
 OrderMaker *CNF::constructQuerySortOrderFromFileOrder(OrderMaker *fileOrder)
@@ -199,7 +220,6 @@ OrderMaker *CNF::constructQuerySortOrderFromFileOrder(OrderMaker *fileOrder)
 	maker->testing_helper_setAttributes(numberOfAttributes, attributes, types);
 	return maker;
 }
-
 std::string OrderMaker :: toString () {
 	std::string oString;
 	oString += std::to_string(numAtts) + "\n";

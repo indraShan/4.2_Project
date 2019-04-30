@@ -42,6 +42,9 @@ public:
 
 class ProjectNode: public TreeNode {
 public:
+Attribute attributes[100];
+int attsToKeep;
+void printSelf();
 ProjectNode(TreeNode *root, NameList *attsToSelect);
 };
 
@@ -63,7 +66,7 @@ public:
 
 class SumNode: public TreeNode {
 public:
-    Function fnc;
+    Function *fnc;
     Schema* constructSchemaFrom(TreeNode *root, FuncOperator *finalFunction);
     void printSelf();
     SumNode(TreeNode *root, FuncOperator *finalFunction);
@@ -71,8 +74,11 @@ public:
 
 class GroupByNode: public TreeNode {
 public:
-GroupByNode(TreeNode *root, NameList *groupingAtts, FuncOperator *finalFunction);
-Schema* constructSchemaFrom(TreeNode *root, NameList *groupingAtts, FuncOperator *finalFunction);
+    Function *fnc;
+    OrderMaker om;
+    GroupByNode(TreeNode *root, NameList *groupingAtts, FuncOperator *finalFunction);
+    void printSelf();
+    Schema* constructSchemaFrom(TreeNode *root, NameList *groupingAtts, FuncOperator *finalFunction);
 };
 
 class WriteOutNode: public TreeNode {

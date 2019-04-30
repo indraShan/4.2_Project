@@ -40,7 +40,7 @@ int main () {
 
 
 	// s.printStore();
-	char *cnf = "SELECT DISTINCT s_nationkey FROM supplier AS s, nation AS n WHERE (s.s_nationkey = n.n_nationkey)";
+	char *cnf = "SELECT SUM(s.s_nationkey) FROM supplier AS s, nation AS n WHERE (s.s_nationkey = n.n_nationkey) AND (s.s_nationkey < 20)";
 	yy_scan_string(cnf);
 	yyparse();	
 
