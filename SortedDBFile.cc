@@ -38,7 +38,7 @@ bool SortedDBFile::fileExists(const char *f_path)
 
 SortedDBFile ::~SortedDBFile()
 {
-    cout << "SortedDBFile being destroyed\n";
+    // cout << "SortedDBFile being destroyed\n";
     Close();
 }
 
@@ -84,7 +84,7 @@ void SortedDBFile::initState(bool createFile, const char *f_path, OrderMaker *or
     // Create or open the file.
     actualFile->Open(createFile == true ? 0 : 1, f_path);
     moveReadPageToFirstRecord();
-    cout << "Number of pages = " << actualFile->GetLength() << "\n";
+    // cout << "Number of pages = " << actualFile->GetLength() << "\n";
     if (createFile){
         // Create a meta file to store the type and name of the file
         std::ofstream outfile (string(f_path) + ".meta");
@@ -101,7 +101,7 @@ void SortedDBFile::initState(bool createFile, const char *f_path, OrderMaker *or
 // and the run length and order maker to the meta file.
 int SortedDBFile::Create(const char *f_path, fType f_type, void *startup)
 {
-    cout << "create called \n";
+    // cout << "create called \n";
     SortOrder *sortOrder = ((SortOrder *)startup);
     // printf("run length = %d \n", sortOrder->runLength);
     // Assumption: if file already exists, it would be over written.
@@ -116,7 +116,7 @@ int SortedDBFile::Create(const char *f_path, fType f_type, void *startup)
 // meta file.
 int SortedDBFile::Open(const char *f_path)
 {
-    cout << "Open called \n";
+    // cout << "Open called \n";
     if (!fileExists(f_path))
         return 0;
 
@@ -155,7 +155,7 @@ int SortedDBFile::Open(const char *f_path)
 
 void SortedDBFile::Load(Schema &f_schema, const char *loadpath)
 {
-    printf("Load called. \n");
+    // printf("Load called. \n");
     if (!fileExists(loadpath))
         return;
     FILE *tableFile = fopen(loadpath, "r");
@@ -166,7 +166,7 @@ void SortedDBFile::Load(Schema &f_schema, const char *loadpath)
         Add(temp);
         count++;
     }
-    printf("Added %d records !!!!! \n", count);
+    // printf("Added %d records !!!!! \n", count);
 }
 
 void SortedDBFile::initializeBigQueue()
@@ -186,7 +186,7 @@ void SortedDBFile::addRecord(Record &rec)
 
 void SortedDBFile::switchToReadMode()
 {
-    printf("switchToReadMode called \n");
+    // printf("switchToReadMode called \n");
     // Write sorted records to file.
     writePipeRecordsToFile();
     // Go back to read mode.
@@ -289,7 +289,7 @@ void SortedDBFile::writeSortedRecordToTempFile(Record record) {
 // Reset reset pointer to correct location in file.
 void SortedDBFile::writePipeRecordsToFile()
 {
-    printf("writePipeRecordsToFile called \n");
+    // printf("writePipeRecordsToFile called \n");
     createTempFile();
     inputPipe->ShutDown();
     // Reset current read page to be at the first record of the file.
@@ -340,7 +340,7 @@ void SortedDBFile::writePipeRecordsToFile()
             file = readNextFileRecord(&fileRecord);
         }
     } while (pipe != 0 || file != 0);
-    printf("After loop \n");
+    // printf("After loop \n");
     writeSortedPageToTempFile();
 
     // Close current file.
@@ -372,7 +372,7 @@ void SortedDBFile::writePipeRecordsToFile()
 // Mode-> Writing. GetNext, Close, MoveFirst.
 void SortedDBFile::Add(Record &rec)
 {
-    printf("Add called. Sorted DV \n");
+    // printf("Add called. Sorted DV \n");
     if (inReadMode == true)
     {
         // Create a new instance of BigQ
@@ -388,7 +388,7 @@ void SortedDBFile::Add(Record &rec)
 
 int SortedDBFile::GetNext(Record &fetchme)
 {
-    printf("GetNext called \n");
+    // printf("GetNext called \n");
     if (inReadMode == false)
     {
         switchToReadMode();
@@ -514,7 +514,7 @@ void SortedDBFile::binarySearchFileToFind(Record *literal, Record *record,
 // then you add it to the end of the “query” OrderMaker that you are constructing
 int SortedDBFile::GetNext(Record &fetchme, CNF &cnf, Record &literal)
 {
-    printf("GetNext with CNF called\n");
+    // printf("GetNext with CNF called\n");
     if (inReadMode == false)
     {
         switchToReadMode();
@@ -524,7 +524,7 @@ int SortedDBFile::GetNext(Record &fetchme, CNF &cnf, Record &literal)
     queryOrderMaker = cnf.constructQuerySortOrderFromFileOrder(fileOrderMaker);
     // TODO: Verify if this scenario is correct
     if (queryOrderMaker == NULL) {
-        printf("No matching sort order!! \n");
+        // printf("No matching sort order!! \n");
         ComparisonEngine comp;
         while (GetNext(fetchme) == 1) {
             if (comp.Compare (&fetchme, &literal, &cnf)) {
@@ -570,7 +570,7 @@ void SortedDBFile::MoveFirst()
 // TODO: Dealloc everything
 int SortedDBFile::Close()
 {
-    cout << "Close called.\n";
+    // cout << "Close called.\n";
     if (inReadMode == false)
     {
         switchToReadMode();

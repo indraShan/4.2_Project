@@ -51,6 +51,80 @@ void TreeNode::print(int depth) {
     }
 }
 
+void TreeNode::run(vector<RelationalOp *> *operators) {
+    
+}
+
+void ProjectNode::run(vector<RelationalOp *> *operators) {
+    if (this->left != NULL) {
+        this->left->run(operators);
+    }
+    Project *projectOperator = new Project();
+    pipe = new Pipe(100);
+    projectOperator->Run(*this->left->pipe, *pipe, attributesKept, this->numAttsInput, attsToKeep);
+    operators->push_back(projectOperator);
+}
+
+void WriteOutNode::run(vector<RelationalOp *> *operators) {
+    printf("WriteOut run called \n");
+    if (this->left != NULL) {
+        this->left->run(operators);
+    }
+    // WriteOut *writeOutOperator = new WriteOut();
+    // writeOutOperator->Run(*this->left->pipe, this->outputFile, *this->schema);
+    // operators->push_back(writeOutOperator);
+}
+
+
+void SumNode::run(vector<RelationalOp *> *operators) {
+    printf("SumNode run called \n");
+    if (this->left != NULL) {
+        this->left->run(operators);
+    }
+    // Sum *sumOperator = new Sum();
+    // pipe = new Pipe(100);
+    // sumOperator->Run(*this->left->pipe, *pipe, *this->fnc);
+    // operators->push_back(sumOperator);
+}
+
+void GroupByNode::run(vector<RelationalOp *> *operators) {
+    printf("GroupByNode run called \n");
+    if (this->left != NULL) {
+        this->left->run(operators);
+    }  
+    GroupBy *groupByOperation = new GroupBy();
+    pipe = new Pipe(100);
+    groupByOperation->Run(*this->left->pipe, *pipe, om, *fnc);
+    operators->push_back(groupByOperation);
+}
+
+void JoinNode::run(vector<RelationalOp *> *operators) {
+    printf("JoinNode run called \n");
+    if (this->left != NULL) {
+        this->left->run(operators);
+    }
+    if (this->right != NULL) {
+        this->right->run(operators);
+    }
+    Join *joinOperator = new Join();
+    pipe = new Pipe(100);
+    joinOperator->Run(*this->left->pipe, *this->right->pipe, *pipe, this->cnf, rec);
+    operators->push_back(joinOperator);
+}
+
+void FileNode::run(vector<RelationalOp *> *operators) {
+    printf("FileNode run called \n");
+    databaseFile = new DBFile();
+    string fileName = string(relNames[0]) + DBFileExtension;
+    // printf("Open called \n");
+    databaseFile->Open((char *)fileName.c_str());
+    SelectFile *selectOperation = new SelectFile();
+    pipe = new Pipe(100);
+    printf("Will call run \n");
+    selectOperation->Run(*databaseFile, *pipe, this->cnf, rec);
+    operators->push_back(selectOperation);
+}
+
 void TreeNode::printSelf() {
 //   printAnnot(os, level);
 //   printSchema(os, level);
@@ -66,7 +140,8 @@ QueryMaker::QueryMaker(
     int distinctAtts, 
     int distinctFunc, 
     Statistics *statistics, 
-    char *catalogPath) {
+    char *catalogPath, 
+    string output) {
 
     this->finalFunction = finalFunction;
     this->tables = tables;
@@ -79,6 +154,7 @@ QueryMaker::QueryMaker(
     this->root = NULL;
     this->nodes = new vector<TreeNode*>();
     this->catolog_path = catalogPath;
+    this->output = output;
 }
 
 QueryMaker::~QueryMaker () {
@@ -133,6 +209,18 @@ void ProjectNode::printSelf() {
     }
 }
 
+void QueryMaker::runQuery() {
+    
+    printf("Run query called. \n");
+    operators = new vector<RelationalOp *>();
+    this->root->run(operators);
+
+     for (std::vector<RelationalOp*>::iterator runsIterator = operators->begin(); runsIterator != operators->end(); ++runsIterator)
+	{
+		RelationalOp *relOperator = *runsIterator;
+		relOperator->WaitUntilDone();
+	}
+}
 
 void QueryMaker::make() {
     // Make tables.
@@ -182,12 +270,20 @@ void QueryMaker::make() {
         root = new DuplicateRemovalNode(root);
     }
 
-    root = new WriteOutNode(root);
+    root = new WriteOutNode(root, this->output);
 }
 
-WriteOutNode::WriteOutNode(TreeNode *root) : TreeNode("Write", new Schema(root->schema)) {
+WriteOutNode::WriteOutNode(TreeNode *root, string output) : TreeNode("Write", new Schema(root->schema)) {
     // printf("Write node called \n");
     this->left = root;
+    this->outputFile = NULL;
+    if (output == "STDOUT") {
+        this->outputFile = stdout;
+    }
+    else if (output != "NONE") {
+        this->outputFile = fopen(output.c_str(), "w");
+    }
+
     for (size_t index = 0; index < root->numberOfRelations; index++) {
         this->relNames[this->numberOfRelations++] = strdup(root->relNames[index]);
     }
@@ -196,6 +292,7 @@ WriteOutNode::WriteOutNode(TreeNode *root) : TreeNode("Write", new Schema(root->
 ProjectNode::ProjectNode(TreeNode *root, NameList *attsToSelect) : TreeNode("Project", NULL)  {
     // printf("ProjectNode called \n");
     this->left = root;
+    this->numAttsInput = root->schema->GetNumAtts();
     for (size_t index = 0; index < root->numberOfRelations; index++) {
         this->relNames[this->numberOfRelations++] = strdup(root->relNames[index]);
     }
@@ -204,6 +301,7 @@ ProjectNode::ProjectNode(TreeNode *root, NameList *attsToSelect) : TreeNode("Pro
     for (; attsToSelect; attsToSelect = attsToSelect->next, index++) {
         attributes[index].name = attsToSelect->name;
         attributes[index].myType = rootSchema->FindType(attsToSelect->name);
+        attributesKept[index] = rootSchema->Find(attsToSelect->name);
         attsToKeep++;
     }
     schema = new Schema("", index, attributes);
@@ -344,7 +442,7 @@ pair<int, AndList *> QueryMaker::evaluateJoinedParseTreeForOrder(vector<TreeNode
         // printf("Size after adding join = %d \n", order.size());
 
         AndList *currentTree = buildParseTreeAfterApplyingSelect(boolean, joined->schema);
-        joined->cnf.GrowFromParseTree(currentTree, joined->schema, joined->rec);
+        joined->cnf.GrowFromParseTree(currentTree, node1->schema, node2->schema, joined->rec);
         append(builtTree, currentTree);
         
         int currentCost = this->statistics->Estimate(currentTree, joined->relNames, joined->numberOfRelations);

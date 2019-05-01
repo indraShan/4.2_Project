@@ -15,7 +15,7 @@ HeapFile::HeapFile() {
 }
 
 HeapFile ::~HeapFile() {
-    cout << "DBFile (heap) being destroyed\n";
+    // cout << "DBFile (heap) being destroyed\n";
     Close();
 }
 
@@ -45,7 +45,7 @@ void HeapFile::initState(bool createFile, const char *f_path) {
     if (actualFile->GetLength() > 0) {
         actualFile->GetPage(currentPage, 0);
     }
-    cout << "Number of pages = " << actualFile->GetLength() << "\n";
+    // cout << "Number of pages = " << actualFile->GetLength() << "\n";
     if(createFile){
         // Create a meta file to store the type and name of the file
         std::ofstream outfile (string(f_path) + ".meta");
@@ -56,14 +56,14 @@ void HeapFile::initState(bool createFile, const char *f_path) {
 
 int HeapFile::Create(const char *f_path, fType f_type, void *startup)
 {
-    cout << "create called \n";
+    // cout << "create called \n";
     // Assumption: if file already exists, it would be over written.
     initState(true, f_path);
     return 1;
 }
 
 void HeapFile::Load(Schema &f_schema, const char *loadpath) {
-    cout << "Load called. \n";
+    // cout << "Load called. \n";
     if (!fileExists(loadpath)) return;
     FILE *tableFile = fopen(loadpath, "r");
     ComparisonEngine comp;
@@ -73,11 +73,11 @@ void HeapFile::Load(Schema &f_schema, const char *loadpath) {
        Add(temp);
        count++;
     }
-    cout << "Added " << count << " records !!!!! \n";
+    // cout << "Added " << count << " records !!!!! \n";
 }
 
 int HeapFile::Open(const char *f_path) {
-    cout << "Open called \n";
+    // cout << "Open called \n";
     // Return failure if we can't find the file at
     // the given path.
     if (!fileExists(f_path)) return 0;
@@ -101,7 +101,7 @@ void HeapFile::MoveFirst() {
 }
 
 int HeapFile::Close() {
-    cout << "Close called.\n";
+    // cout << "Close called.\n";
     // If file or page is null, we have already closed this file.
     if (actualFile == NULL || currentPage == NULL) return 0;
 

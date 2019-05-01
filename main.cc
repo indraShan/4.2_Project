@@ -3,6 +3,7 @@
 #include "ParseTree.h"
 #include "Statistics.h"
 #include "QueryMaker.h"
+#include "DBFile.h"
 
 using namespace std;
 
@@ -11,7 +12,6 @@ extern "C" {
 }
 
 extern "C" struct YY_BUFFER_STATE *yy_scan_string(const char*);
-
 
 extern struct FuncOperator *finalFunction; // the aggregate function (NULL if no agg)
 extern struct TableList *tables; // the list of tables and aliases in the query
@@ -22,10 +22,31 @@ extern int distinctAtts; // 1 if there is a DISTINCT in a non-aggregate query
 extern int distinctFunc;  // 1 if there is a DISTINCT in an aggregate query
 
 int main () {
+	
+	char *catalog_path = "catalog";
+	// const char *tpch_dir ="/Users/indrajit/Documents/Study/UFL/Spring19/DBI/Project/1/data/";
+	// char *supplier = "supplier"; 
+	// char *nation = "supplier"; 
+
+	// DBFile dbfile;
+	// int result = dbfile.Create ("supplier.bin", heap, NULL);
+	// Schema schema(catalog_path, supplier);
+	// char tbl_path[100];
+	// sprintf (tbl_path, "%s%s.tbl", tpch_dir, "supplier"); 
+	// dbfile.Load(schema, tbl_path);
+	// result = dbfile.Close();
+
+	// DBFile dbfile2;
+	// result = dbfile2.Create ("nation.bin", heap, NULL);
+	// Schema schema2(catalog_path, nation);
+	// char tbl_path2[100];
+	// sprintf (tbl_path2, "%s%s.tbl", tpch_dir, "nation"); 
+	// dbfile2.Load(schema2, tbl_path2);
+	// result = dbfile2.Close();
 
 	Statistics *s = new Statistics();
 	char *relName[] = {"supplier","customer","nation"};
-	char *catalog_path = "catalog"; 
+	 
 
 	
 	s->AddRel(relName[0],10000);
@@ -53,10 +74,16 @@ int main () {
 		distinctAtts, 
 		distinctFunc, 
 		s,
-		catalog_path);
+		catalog_path, 
+		"STDOUT");
 	maker->make();
+	
 	maker->printQuery();
-
+	maker->runQuery();
+	// if (maker->root != NULL) {
+	// 	maker->root->run();
+	// }
+	
 	
 	// s.AddRel(relName[0], 10000);
 	// s.AddAtt(relName[0], "o_orderkey", 10000);

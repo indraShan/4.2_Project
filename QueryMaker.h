@@ -5,6 +5,8 @@
 #include "ParseTree.h"
 #include "Schema.h"
 #include "Function.h"
+#include "DBFile.h"
+#include "RelOp.h"
 
 class TreeNode {
 private:
@@ -12,6 +14,7 @@ private:
 
 public:
     int pipeId;
+    Pipe *pipe;
     char* displayString;
     Schema *schema;
     int estimatedCost;
@@ -24,6 +27,7 @@ public:
     void print(int depth);
     TreeNode *left;
     TreeNode *right;
+    virtual void run(vector<RelationalOp *> *operators);
     virtual void printSelf();
 };
 
@@ -33,18 +37,23 @@ public:
 class FileNode: public TreeNode {
 private:
     TableList *table;
+    DBFile *databaseFile;
 public:
     CNF cnf;
     Record rec;
     FileNode(TableList *table, char *alias, Schema *schema, char *relName);
+    void run(vector<RelationalOp *> *operators);
     void printSelf();
 };
 
 class ProjectNode: public TreeNode {
+int numAttsInput;
 public:
 Attribute attributes[100];
 int attsToKeep;
+int attributesKept[100];
 void printSelf();
+void run(vector<RelationalOp *> *operators);
 ProjectNode(TreeNode *root, NameList *attsToSelect);
 };
 
@@ -52,6 +61,7 @@ class JoinNode: public TreeNode {
 private:
 
 public:
+    void run(vector<RelationalOp *> *operators);
     CNF cnf;
     Record rec;
     void printSelf();
@@ -70,6 +80,7 @@ public:
     Schema* constructSchemaFrom(TreeNode *root, FuncOperator *finalFunction);
     void printSelf();
     SumNode(TreeNode *root, FuncOperator *finalFunction);
+    void run(vector<RelationalOp *> *operators);
 };
 
 class GroupByNode: public TreeNode {
@@ -78,12 +89,15 @@ public:
     OrderMaker om;
     GroupByNode(TreeNode *root, NameList *groupingAtts, FuncOperator *finalFunction);
     void printSelf();
+    void run(vector<RelationalOp *> *operators);
     Schema* constructSchemaFrom(TreeNode *root, NameList *groupingAtts, FuncOperator *finalFunction);
 };
 
 class WriteOutNode: public TreeNode {
 public:
-    WriteOutNode(TreeNode *root);
+    FILE *outputFile;
+    WriteOutNode(TreeNode *root, string output);
+    void run(vector<RelationalOp *> *operators);
 };
 
 class QueryMaker {
@@ -104,8 +118,11 @@ AndList* buildParseTreeAfterApplyingSelect(AndList *&source, Schema *schema);
 bool operationMatchesSchema(ComparisonOp *operation, Schema *schema);
 bool attributesPresentInSchema(OrList *orList, Schema *schema);
 void append(AndList*& source, AndList*& addition);
+vector<RelationalOp *> *operators;
+string output;
 
 public:
+    void runQuery();
     TreeNode *root;
     QueryMaker (
         FuncOperator *finalFunction, 
@@ -116,7 +133,8 @@ public:
         int distinctAtts, 
         int distinctFunc, 
         Statistics *statistics, 
-        char *catalogPath); 
+        char *catalogPath, 
+        string output); 
     virtual ~QueryMaker();
 
     void make();
