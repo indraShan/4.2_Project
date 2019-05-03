@@ -135,6 +135,12 @@ void OrderMaker::testing_helper_setAttributes(int numberOfAttributes, int* attib
 
 }
 
+void OrderMaker::growFromParseTree(NameList* gAtts, Schema* inputSchema) {
+  for(; gAtts; gAtts = gAtts->next, numAtts++) {
+    whichTypes[numAtts] = inputSchema->FindType(gAtts->name);
+  }
+}
+
 void OrderMaker :: Print () {
 	printf("NumAtts = %5d\n", numAtts);
 	for (int i = 0; i < numAtts; i++)

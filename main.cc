@@ -20,10 +20,10 @@ extern struct NameList *groupingAtts; // grouping atts (NULL if no grouping)
 extern struct NameList *attsToSelect; // the set of attributes in the SELECT (NULL if no such atts)
 extern int distinctAtts; // 1 if there is a DISTINCT in a non-aggregate query 
 extern int distinctFunc;  // 1 if there is a DISTINCT in an aggregate query
-
+char *catalog_path = "catalog";
 int main () {
 	
-	char *catalog_path = "catalog";
+	
 	// const char *tpch_dir ="/Users/indrajit/Documents/Study/UFL/Spring19/DBI/Project/1/data/";
 	// char *supplier = "supplier"; 
 	// char *nation = "supplier"; 
@@ -45,41 +45,30 @@ int main () {
 	// result = dbfile2.Close();
 
 	Statistics *s = new Statistics();
-	char *relName[] = {"supplier","customer","nation"};
-	 
+        char *relName[] = { "partsupp", "supplier", "nation"};
 
 	
-	s->AddRel(relName[0],10000);
-	s->AddAtt(relName[0], "s_nationkey",25);
+	s->AddRel(relName[0],800000);
+	s->AddAtt(relName[0], "ps_suppkey",10000);
 
-	s->AddRel(relName[1],150000);
-	s->AddAtt(relName[1], "c_custkey",150000);
-	s->AddAtt(relName[1], "c_nationkey",25);
+	s->AddRel(relName[1],10000);
+	s->AddAtt(relName[1], "s_suppkey",10000);
+	s->AddAtt(relName[1], "s_nationkey",25);
 	
 	s->AddRel(relName[2],25);
 	s->AddAtt(relName[2], "n_nationkey",25);
+	s->AddAtt(relName[2], "n_name",25);
 
 
-	// s.printStore();
-	char *cnf = "SELECT SUM(s.s_nationkey) FROM supplier AS s, nation AS n WHERE (s.s_nationkey = n.n_nationkey) AND (s.s_nationkey < 20)";
+	char *cnf = "SELECT	s.s_suppkey, ps.ps_suppkey FROM partsupp AS ps, supplier AS s WHERE (s.s_suppkey = ps.ps_suppkey)";
 	yy_scan_string(cnf);
 	yyparse();	
 
-	QueryMaker *maker = new QueryMaker(
-		finalFunction,
-		tables, 
-		boolean, 
-		groupingAtts, 
-		attsToSelect, 
-		distinctAtts, 
-		distinctFunc, 
-		s,
-		catalog_path, 
-		"STDOUT");
-	maker->make();
+	    QueryMaker *maker = new QueryMaker(s);
+	maker->plan();
 	
-	maker->printQuery();
-	maker->runQuery();
+	maker->print();
+	// maker->runQuery();
 	// if (maker->root != NULL) {
 	// 	maker->root->run();
 	// }

@@ -49,7 +49,11 @@ public:
 	double Estimate(struct AndList *parseTree, char **relNames, int numToJoin);
 	double EstimateResultFromParseTree(struct AndList *p_And);
 	void RelationsExist(char *relNames[],int numToJoin);
-
+  double ApplyEstimate(struct AndList *parseTree, char **relNames, int numToJoin) { // apply and return
+          double estimate = Estimate(parseTree, relNames, numToJoin);
+          Apply(parseTree, relNames, numToJoin);
+          return estimate;
+        }
 };
 
 
