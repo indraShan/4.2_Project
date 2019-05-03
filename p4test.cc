@@ -263,7 +263,7 @@ TEST(Test4, Positive){
 	s->AddAtt(relName[2], "n_name",25);
 
 
-	char *cnf = "SELECT ps.ps_suppkey, s.s_nationkey FROM partsupp AS ps, supplier AS s WHERE (s_suppkey = ps_suppkey)";
+	char *cnf = "SELECT DISTINCT ps.ps_suppkey, s.s_nationkey FROM partsupp AS ps, supplier AS s WHERE (s_suppkey = ps_suppkey)";
 	yy_scan_string(cnf);
 	yyparse();
 

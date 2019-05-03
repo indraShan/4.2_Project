@@ -359,7 +359,7 @@ void* Join::Run () {
 	dbRight.Close();
 	dbRight.Open(p2);
 	Record temp;
-	int leftAtts, rightAtts;
+	int leftAtts=0, rightAtts=0;
 	while(inPipeL->Remove(&temp)){
 		leftAtts = temp.GetNumAtts();
 		dbLeft.Add(temp);

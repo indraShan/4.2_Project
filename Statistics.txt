@@ -1,15 +1,11 @@
-2
-partlineitem
-21432 1 5
-l_shipmode 7
-p_partkey 200000
-l_partkey 200000
-l_shipinstruct 4
-p_container 40
-partpartsuppsupplier
-4 1 5
-s_suppkey 10000
-p_partkey 200000
-p_name 199996
-ps_partkey 200000
-ps_suppkey 10000
+3
+nation
+25 1 1
+n_nationkey 25
+customer
+150000 1 2
+c_nationkey 25
+c_custkey 150000
+orders
+1500000 1 1
+o_custkey 150000

@@ -49,6 +49,8 @@ public:
 
 	// this reads the specification for the schema in from a file
 	Schema (char *fName, char *relName);
+	// this reads the specification for the schema with alias in from a file
+	Schema (char *fName, char *relName, char *alias);
 
 	// this composes a schema instance in-memory
 	Schema (char *fName, int num_atts, Attribute *atts);

@@ -44,7 +44,10 @@ void DBFile::Load(Schema &f_schema, const char *loadpath) {
 
 
 int DBFile::Open(const char *f_path) {
-    if (!fileExists(f_path)) return 0;
+    if (!fileExists(f_path)) {
+        printf("File at path %s, does not exist!! \n", f_path);
+        return 0;
+    }
     // Check the meta data
     std::string f_type;
     std::ifstream file(string(f_path)+".meta");

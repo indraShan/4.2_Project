@@ -16,7 +16,7 @@ Pipe :: Pipe (int bufferSize) {
 	buffered = new (std::nothrow) Record[bufferSize];
 	if (buffered == NULL)
 	{
-		cout << "ERROR : Not enough memory. EXIT !!!\n";
+		cout << "ERROR : Not enough memory 5. EXIT !!!\n";
 		exit(1);
 	}
 

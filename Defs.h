@@ -15,6 +15,7 @@ enum Type {Int, Double, String};
 
 unsigned int Random_Generate();
 
+#define DBFileExtension ".bin"
 
 #endif
 

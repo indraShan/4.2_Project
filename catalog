@@ -100,3 +100,10 @@ l_shipmode String
 l_comment String
 END
 
+BEGIN
+mytable
+mytable.tbl
+att1 Int
+att2 Double
+att3 String
+END

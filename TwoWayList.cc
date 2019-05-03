@@ -16,7 +16,7 @@ TwoWayList <Type> :: TwoWayList (TwoWayList &me) {
 	list = new (std::nothrow) Header;
 	if (list == NULL)
 	{
-		cout << "ERROR : Not enough memory. EXIT !!!\n";
+		cout << "ERROR : Not enough memory 6. EXIT !!!\n";
 		exit(1);
 	}
 
@@ -36,7 +36,7 @@ TwoWayList <Type> :: TwoWayList ()
 	list = new (std::nothrow) Header;
 	if (list == NULL)
 	{
-		cout << "ERROR : Not enough memory. EXIT !!!\n";
+		cout << "ERROR : Not enough memory 7. EXIT !!!\n";
 		exit(1);
 	}
 	
@@ -44,14 +44,14 @@ TwoWayList <Type> :: TwoWayList ()
 	list->first = new (std::nothrow) Node;
 	if (list->first == NULL)
 	{
-		cout << "ERROR : Not enough memory. EXIT !!!\n";
+		cout << "ERROR : Not enough memory 8. EXIT !!!\n";
 		exit(1);
 	}
 
 	list->last = new (std::nothrow) Node;
 	if (list->last == NULL)
 	{
-		cout << "ERROR : Not enough memory. EXIT !!!\n";
+		cout << "ERROR : Not enough memory 9. EXIT !!!\n";
 		exit(1);
 	}
 
@@ -222,7 +222,7 @@ TwoWayList <Type> :: Insert (Type *Item)
 	Node *temp = new (std::nothrow) Node;
 	if (temp == NULL)
 	{
-		cout << "ERROR : Not enough memory. EXIT !!!\n";
+		cout << "ERROR : Not enough memory 10. EXIT !!!\n";
 		exit(1);
 	}
 
@@ -235,7 +235,7 @@ TwoWayList <Type> :: Insert (Type *Item)
 	temp->data = new (std::nothrow) Type;
 	if (temp->data == NULL)
 	{
-		cout << "ERROR : Not enough memory. EXIT !!!\n";
+		cout << "ERROR : Not enough memory 11. EXIT !!!\n";
 		exit(1);
 	}
 

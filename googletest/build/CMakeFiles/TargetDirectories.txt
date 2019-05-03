@@ -1,0 +1,4 @@
+/Users/sidsrvstv/googletest/googletest/build/CMakeFiles/rebuild_cache.dir
+/Users/sidsrvstv/googletest/googletest/build/CMakeFiles/edit_cache.dir
+/Users/sidsrvstv/googletest/googletest/build/CMakeFiles/gtest_main.dir
+/Users/sidsrvstv/googletest/googletest/build/CMakeFiles/gtest.dir
